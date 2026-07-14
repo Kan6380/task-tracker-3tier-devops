@@ -1,0 +1,132 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: #f4f4f2;
+  color: #1a1a1a;
+}
+
+.page {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+
+header {
+  margin-bottom: 2rem;
+}
+
+h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.subtitle {
+  color: #6b6b6b;
+  font-size: 0.9rem;
+  margin: 0.25rem 0 0;
+}
+
+.add-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.add-form input {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #d9d9d5;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.add-form button {
+  padding: 0.6rem;
+  border: none;
+  border-radius: 6px;
+  background: #1a1a1a;
+  color: white;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.add-form button:hover {
+  background: #333;
+}
+
+.muted {
+  color: #8a8a8a;
+  font-size: 0.9rem;
+}
+
+.error {
+  color: #b3261e;
+  font-size: 0.9rem;
+}
+
+.task-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.task-list li {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  background: white;
+  border: 1px solid #e5e5e2;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+}
+
+.task-list li.done .title {
+  text-decoration: line-through;
+  color: #9a9a9a;
+}
+
+.task-list label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  flex: 1;
+  cursor: pointer;
+}
+
+.task-list input[type="checkbox"] {
+  margin-top: 0.3rem;
+}
+
+.title {
+  margin: 0;
+  font-weight: 500;
+}
+
+.desc {
+  margin: 0.15rem 0 0;
+  font-size: 0.85rem;
+  color: #6b6b6b;
+}
+
+.delete {
+  border: none;
+  background: none;
+  font-size: 1.2rem;
+  color: #b3b3b0;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0.25rem;
+}
+
+.delete:hover {
+  color: #b3261e;
+}
