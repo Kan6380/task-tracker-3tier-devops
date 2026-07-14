@@ -27,7 +27,7 @@ jobs:
 
       - name: Run tests
         working-directory: backend
-        run: pytest -v
+        run: python -m pytest -v
 
   build-and-push:
     needs: test-backend
