@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: docker.io/YOUR_DOCKERHUB_USERNAME/three-tier-frontend:latest
+          image: docker.io/abhignadumpala1/three-tier-frontend:latest
           ports:
             - containerPort: 8080
           readinessProbe:
