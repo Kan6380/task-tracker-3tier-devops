@@ -93,5 +93,5 @@ jobs:
             backend=${{ env.BACKEND_IMAGE }}:${{ needs.build-and-push.outputs.image_tag }}
           kubectl set image deployment/frontend \
             frontend=${{ env.FRONTEND_IMAGE }}:${{ needs.build-and-push.outputs.image_tag }}
-          kubectl rollout status deployment/backend --timeout=120s
-          kubectl rollout status deployment/frontend --timeout=120s
+          kubectl rollout status deployment/backend --timeout=300s
+          kubectl rollout status deployment/frontend --timeout=300s
