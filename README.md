@@ -1,7 +1,7 @@
-# Production-ready 3-tier DevOps platform
+# task-tracker-3tier-devops platform
 
 A real 3-tier application (React → FastAPI → Postgres) deployed to a
-Kubernetes cluster with a full CI/CD pipeline.
+self-hosted Kubernetes homelab cluster with a full CI/CD pipeline
 
 ```
 frontend (React + Nginx)  --->  backend (FastAPI)  --->  database (Postgres)
@@ -35,9 +35,9 @@ pytest -v
 ```bash
 git init
 git add .
-git commit -m "Production-ready 3-tier platform"
+git commit -m "task-tracker-3tier-devops"
 git branch -M main
-git remote add origin https://github.com/Kan6380/production-ready-3tier-devops-platform.git
+git remote add origin https://github.com/Kan6380/task-tracker-3tier-devops.git
 git push -u origin main
 ```
 
@@ -50,22 +50,49 @@ git push -u origin main
 
 ## Stage 5 — Set up a self-hosted GitHub Actions runner
 
-Hosted GitHub runners can't reach your homelab's private IPs, so the
-`deploy` job needs a runner living on your network (your Windows
-machine or `k8s-master` both work).
+Hosted GitHub runners can't reach a private homelab network, so the
+`deploy` job needs a runner living inside it. It works by making an
+**outbound** connection to GitHub and listening for jobs, no inbound
+access into your network required.
 
-On GitHub: repo → Settings → Actions → Runners → New self-hosted
-runner, then follow the generated setup script on that machine. Make
-sure `kubectl` on that machine is configured to reach your cluster.
+Register it on a **worker node**, not the control plane, to avoid
+competing with etcd/API server for resources:
+
+```bash
+# on the worker node
+mkdir actions-runner && cd actions-runner
+curl -o actions-runner-linux-x64-<version>.tar.gz -L <download-url-from-github>
+tar xzf ./actions-runner-linux-x64-<version>.tar.gz
+./config.sh --url https://github.com/<you>/<repo> --token <token-from-github>
+sudo ./svc.sh install
+sudo ./svc.sh start
+```
+
+Copy a working kubeconfig onto that same worker node so `kubectl`
+inside the runner can actually reach the cluster:
+
+```bash
+scp ~/.kube/config <user>@<worker-ip>:~/.kube/config
+```
 
 ## Stage 6 — Prepare the cluster (one-time)
+
+**Install a StorageClass first.** A bare `kubeadm` cluster has no
+default storage provisioner (cloud-managed Kubernetes gives you this
+for free), so PVCs will get stuck in `Pending` without it:
+
+```bash
+kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.30/deploy/local-path-storage.yaml
+kubectl patch storageclass local-path -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+```
+
+Then:
 
 ```bash
 kubectl create secret generic postgres-secret \
   --from-literal=POSTGRES_USER=taskuser \
   --from-literal=POSTGRES_PASSWORD=<pick-a-real-password> \
   --from-literal=POSTGRES_DB=taskdb
-
 kubectl apply -f k8s/postgres-pvc.yaml
 kubectl apply -f k8s/postgres-deployment.yaml
 kubectl apply -f k8s/postgres-service.yaml
@@ -83,8 +110,7 @@ kubectl apply -f k8s/frontend-service.yaml
 kubectl get pods -w
 ```
 
-Visit `http://<any-node-ip>:30081` — same NodePort pattern as your
-earlier nginx test.
+Visit `http://<any-node-ip>:30081`.
 
 ## Stage 7 — Prove the full pipeline
 
@@ -92,6 +118,12 @@ Change something in `frontend/src/App.jsx` or `backend/app/main.py`,
 push to `main`, and watch the Actions tab run: test → build both
 images → push to Docker Hub → deploy to your cluster. Refresh the
 site and confirm the change is live.
+
+**Note:** rolling updates on limited homelab hardware can take
+longer than you'd expect, if `deploy` times out even though pods
+end up healthy, it's likely just the default 120s rollout timeout
+being too tight, not a real failure. Bump it up in the workflow file
+if needed.
 
 ## What makes this "production-shaped" rather than a toy
 
@@ -105,13 +137,18 @@ site and confirm the change is live.
   cluster
 - Containers run **as non-root** (both Dockerfiles)
 - CI runs tests before anything gets built or pushed
+- Fully automated end-to-end pipeline, including deployment via a
+  self-hosted runner
 
 ## Where to go next
 
+- Add **centralized logging** (Loki + Grafana), by default, crashed
+  container logs get garbage-collected and are lost for good
+- Add **metrics-server** and basic dashboards, useful for diagnosing
+  slow rollouts or resource pressure
 - Swap `kubectl set image` in CI for **Argo CD** (GitOps: the cluster
   pulls changes instead of CI pushing them)
 - Add an **Ingress controller** so the frontend has a real hostname
   instead of a NodePort
-- Add **Prometheus + Grafana** for metrics, and centralized logging
+- Add **Prometheus + Grafana** for metrics
 - Add a **HorizontalPodAutoscaler** on the backend and frontend
-# runner test
