@@ -32,7 +32,7 @@ spec:
               subPath: postgres
           readinessProbe:
             exec:
-              command: ["pg_isready", "-U", "taskuser"]
+              command: ["pg_isready", "-U", "taskuser", "-d", "taskdb"]
             initialDelaySeconds: 5
             periodSeconds: 5
           resources:
